@@ -62,7 +62,7 @@ func (server msgServer) StakeToValidatorSet(goCtx context.Context, msg *types.Ms
 		return nil, err
 	}
 
-	tokenAmt := sdk.NewDec(msg.Coins[0].Amount.Int64())
+	tokenAmt := sdk.NewDec(msg.Coin.Amount.Int64())
 
 	for _, val := range msg.Preferences {
 		validator, err := server.keeper.ValidateValidator(ctx, val.ValOperAddress)
@@ -82,10 +82,9 @@ func (server msgServer) StakeToValidatorSet(goCtx context.Context, msg *types.Ms
 	return &types.MsgStakeToValidatorSetResponse{}, nil
 }
 
-// userA stakes {10osmo ValA ValB} -> [{ValA, ValB} -> {0.4, 0.6}] = 10osmo = {4osmo, 6osmo}
-// userA unstake {3osmo ValA} -> [{valA, valB} -> {0.142, 0.857}] = 7osmo = {1osmo, 6osmo}
-// 	User can also do unstake all
-// 	User gives {amount, validators} to unstake from (partial undelegation)
+// UnStakeFromValidatorSet unstakes all the tokens from the validator set.
+// For ex: UnStake 10osmo with validator-set {ValA -> 0.5, ValB -> 0.3, ValC -> 0.2}
+// our unstake logic would attempt to unstake 5osmo from A , 2osmo from B, 3osmo from C
 func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *types.MsgUnStakeFromValidatorSet) (*types.MsgUnStakeFromValidatorSetResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -100,19 +99,12 @@ func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *type
 		return nil, err
 	}
 
-	// the total amount the user wants to unstakes
-	tokenAmt := sdk.NewDec(msg.Coins[0].Amount.Int64())
+	// the total amount the user wants to unstake
+	tokenAmt := sdk.NewDec(msg.Coin.Amount.Int64())
 
-	total_weight := sdk.NewDec(0)
-	// check if the provided validator set is correct
-	for i, val := range msg.Preferences {
-		// validation checks making sure the weights add up to 1 and also the validator given is correct
-		_, err := server.keeper.ValidateValidator(ctx, val.ValOperAddress)
-		if err != nil {
-			return nil, err
-		}
-
-		// Calculate the amount to unstake based on the weight provided
+	totalAmountFromWeights := sdk.NewDec(0)
+	for i, val := range existingSet.Preferences {
+		// Calculate the amount to unstake based on the existing weights
 		amountToUnStake := val.Weight.Mul(tokenAmt)
 
 		// ValidateValidator gurantees that this exist
@@ -126,18 +118,12 @@ func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *type
 			return nil, err
 		}
 
-		total_weight = total_weight.Add(val.Weight)
-
-		// updating the existing validator set with new weights
-		existingSet[i].Weight = val.Weight
-		existingSet[i].ValOperAddress = val.ValOperAddress
+		totalAmountFromWeights = totalAmountFromWeights.Add(amountToUnStake)
 	}
 
-	if total_weight != sdk.NewDec(1) {
-		return nil, fmt.Errorf("The weights allocated to the validators do not add up to 1")
+	if totalAmountFromWeights != tokenAmt {
+		return nil, fmt.Errorf("The unstake total donot add up with the amount calculated from weights")
 	}
-
-	server.keeper.SetValidatorSetPreferences(ctx, existingSet)
 
 	return &types.MsgUnStakeFromValidatorSetResponse{}, nil
 }

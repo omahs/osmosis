@@ -10,68 +10,54 @@ option go_package = "github.com/osmosis-labs/osmosis/v12/x/validator-preference/
 // Msg defines the validator-preference modules's gRPC message service.
 service Msg {
   // CreateValidatorSetPreference creates a set of validator preference.
-  rpc CreateValidatorSetPreference(MsgValidatorSetPreference)
-      returns (MsgValidatorSetPreferenceResponse);
+  rpc CreateValidatorSetPreference(MsgCreateValidatorSetPreference)
+      returns (MsgCreateValidatorSetPreferenceResponse);
 
   // StakeToValidatorSet gets the owner and coins and stakes to a validator-set.
   rpc StakeToValidatorSet(MsgStakeToValidatorSet)
       returns (MsgStakeToValidatorSetResponse);
 
-  // UnStakeFromValidatorSet gets the owner and coins and unstakes from
+  // UnStakeFromoValidatorSet gets the owner and coins and unstakes from
   // validator-set.
   rpc UnStakeFromValidatorSet(MsgUnStakeFromValidatorSet)
       returns (MsgUnStakeFromValidatorSetResponse);
 }
 
-// MsgValidatorSetPreference is a set of list that holds validator-preference.
-message MsgValidatorSetPreference {
-  // user who is trying to create a validator set.
-  string owner = 1 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
-
-  repeated ValidatorPreference preferences = 2 [
-    (gogoproto.moretags) = "yaml:\"preferences\"",
-    (gogoproto.nullable) = false
-  ];
+// MsgCreateValidatorSetPreference is a set of list that holds validator-preference.
+message MsgCreateValidatorSetPreference {
+  repeated ValidatorPreference preferences = 1 [ (gogoproto.nullable) = false ];
 }
 
-message MsgValidatorSetPreferenceResponse { bool success = 1; }
+message MsgCreateValidatorSetPreferenceResponse { bool success = 1; }
 
 message MsgStakeToValidatorSet {
   // owner is the user who is trying to stake.
   string owner = 1 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
 
   // the amount of tokens the user is trying to stake.
-  repeated cosmos.base.v1beta1.Coin coins = 2 [
+  cosmos.base.v1beta1.Coin coin = 2 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
 
   // the users validator-set, [{valAddr, weight}] to stake the tokens to.
   // a user can have multiple {valAddr, weight}.
-  repeated ValidatorPreference preferences = 3 [
-    (gogoproto.moretags) = "yaml:\"preferences\"",
-    (gogoproto.nullable) = false
-  ];
+  // All the weights must add up to 1.
+  repeated ValidatorPreference preferences = 3 [ (gogoproto.nullable) = false ];
 }
 
-message MsgStakeToValidatorSetResponse {}
+message MsgStakeToValidatorSetResponse { bool success = 1; }
 
 message MsgUnStakeFromValidatorSet {
   // owner is the user who is trying to unstake.
   string owner = 1 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
 
   // the amount the user wants to unstake
-  // user should be able to unstake a porportion of the amount from
-  // validator-set
-  repeated cosmos.base.v1beta1.Coin coins = 2 [
+  // For ex: UnStake 10osmo with validator-set {ValA -> 0.5, ValB -> 0.3, ValC -> 0.2}
+  // our unstake logic would attempt to unstake 5osmo from A , 2osmo from B, 3osmo from C
+  cosmos.base.v1beta1.Coin coin = 3 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-
-  // the users validator-set, {valAddr, weight} to unstake the tokens from.
-  repeated ValidatorPreference preferences = 3 [
-    (gogoproto.moretags) = "yaml:\"preferences\"",
-    (gogoproto.nullable) = false
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
 }
 
