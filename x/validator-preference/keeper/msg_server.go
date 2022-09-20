@@ -23,7 +23,7 @@ func NewMsgServerImpl(keeper *Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg *types.MsgValidatorSetPreference) (*types.MsgValidatorSetPreferenceResponse, error) {
+func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg *types.MsgCreateValidatorSetPreference) (*types.MsgCreateValidatorSetPreferenceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// check if a user already have a validator-set created
@@ -48,7 +48,6 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 	}
 
 	server.keeper.SetValidatorSetPreferences(ctx, *msg)
-
 	return &types.MsgValidatorSetPreferenceResponse{}, nil
 }
 

@@ -35,7 +35,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) SetValidatorSetPreferences(ctx sdk.Context, validators types.ValidatorSetPreferences) error {
+func (k Keeper) SetValidatorSetPreferences(ctx sdk.Context, validators types.ValidatorSetPreferences) {
 	store := ctx.KVStore(k.storeKey)
 	osmoutils.MustSet(store, []byte(validators.Owner), &validators)
 	return nil
@@ -46,6 +46,5 @@ func (k Keeper) GetValidatorSetPreference(ctx sdk.Context, owner string) types.V
 
 	store := ctx.KVStore(k.storeKey)
 	osmoutils.MustGet(store, []byte(owner), &validatorSet)
-
 	return validatorSet
 }

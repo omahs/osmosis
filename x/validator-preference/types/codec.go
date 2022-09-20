@@ -8,13 +8,17 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgValidatorSetPreference{}, "", nil)
+	cdc.RegisterConcrete(&MsgCreateValidatorSetPreference{}, "", nil)
+	cdc.RegisterConcrete(&MsgStakeToValidatorSet{}, "", nil)
+	cdc.RegisterConcrete(&MsgUnStakeFromValidatorSet{}, "", nil)
 	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgValidatorSetPreference{},
+		&MsgCreateValidatorSetPreference{},
+		&MsgStakeToValidatorSet{},
+		&MsgUnStakeFromValidatorSet{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
