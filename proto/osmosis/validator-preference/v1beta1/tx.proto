@@ -25,7 +25,7 @@ service Msg {
 
 // MsgCreateValidatorSetPreference is a set of list that holds validator-preference.
 message MsgCreateValidatorSetPreference {
-    // owner is the user who is trying to unstake.
+    // owner is the user who is trying to create valsetpref.
     string owner = 1 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
 
     repeated ValidatorPreference preferences = 2 [

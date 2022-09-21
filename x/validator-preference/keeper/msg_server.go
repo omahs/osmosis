@@ -47,7 +47,7 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 		return nil, fmt.Errorf("The weights allocated to the validators do not add up to 1")
 	}
 
-	// server.keeper.SetValidatorSetPreferences(ctx, *msg.SetPreferences)
+	//server.keeper.SetValidatorSetPreferences(ctx, *msg)
 	return &types.MsgCreateValidatorSetPreferenceResponse{}, nil
 }
 
