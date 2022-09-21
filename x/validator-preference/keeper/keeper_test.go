@@ -3,9 +3,10 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/osmosis-labs/osmosis/v12/app/apptesting"
+	"github.com/stretchr/testify/suite"
 )
 
 type KeeperTestSuite struct {
@@ -20,6 +21,15 @@ func (suite *KeeperTestSuite) SetupTest() {
 
 func (suite *KeeperTestSuite) Cleanup() {
 	suite.cleanup()
+}
+
+func (suite *KeeperTestSuite) SetupValidators(bondStatuses []stakingtypes.BondStatus) []sdk.ValAddress {
+	valAddrs := []sdk.ValAddress{}
+	for _, status := range bondStatuses {
+		valAddr := suite.SetupValidator(status)
+		valAddrs = append(valAddrs, valAddr)
+	}
+	return valAddrs
 }
 
 func TestKeeperTestSuite(t *testing.T) {

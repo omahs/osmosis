@@ -13,10 +13,10 @@ const (
 var _ sdk.Msg = &MsgCreateValidatorSetPreference{}
 
 // NewMsgCreateValidatorSetPreference creates a msg to create a new denom
-func NewMsgCreateValidatorSetPreference(usersValidatorSet ValidatorSetPreferences) *MsgCreateValidatorSetPreference {
+func NewMsgCreateValidatorSetPreference(owner sdk.AccAddress, preferences []ValidatorPreference) *MsgCreateValidatorSetPreference {
 	return &MsgCreateValidatorSetPreference{
-		Owner:       usersValidatorSet.Owner,
-		Preferences: usersValidatorSet.Preferences,
+		Owner:       owner.String(),
+		Preferences: preferences,
 	}
 }
 

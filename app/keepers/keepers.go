@@ -72,6 +72,7 @@ import (
 	"github.com/osmosis-labs/osmosis/v12/x/txfees"
 	txfeeskeeper "github.com/osmosis-labs/osmosis/v12/x/txfees/keeper"
 	txfeestypes "github.com/osmosis-labs/osmosis/v12/x/txfees/types"
+	validatorpreferencekeeper "github.com/osmosis-labs/osmosis/v12/x/validator-preference/keeper"
 )
 
 type AppKeepers struct {
@@ -89,28 +90,29 @@ type AppKeepers struct {
 	ScopedWasmKeeper     capabilitykeeper.ScopedKeeper
 
 	// "Normal" keepers
-	AccountKeeper        *authkeeper.AccountKeeper
-	BankKeeper           *bankkeeper.BaseKeeper
-	AuthzKeeper          *authzkeeper.Keeper
-	StakingKeeper        *stakingkeeper.Keeper
-	DistrKeeper          *distrkeeper.Keeper
-	SlashingKeeper       *slashingkeeper.Keeper
-	IBCKeeper            *ibckeeper.Keeper
-	ICAHostKeeper        *icahostkeeper.Keeper
-	TransferKeeper       *ibctransferkeeper.Keeper
-	EvidenceKeeper       *evidencekeeper.Keeper
-	GAMMKeeper           *gammkeeper.Keeper
-	TwapKeeper           *twap.Keeper
-	LockupKeeper         *lockupkeeper.Keeper
-	EpochsKeeper         *epochskeeper.Keeper
-	IncentivesKeeper     *incentiveskeeper.Keeper
-	MintKeeper           *mintkeeper.Keeper
-	PoolIncentivesKeeper *poolincentiveskeeper.Keeper
-	TxFeesKeeper         *txfeeskeeper.Keeper
-	SuperfluidKeeper     *superfluidkeeper.Keeper
-	GovKeeper            *govkeeper.Keeper
-	WasmKeeper           *wasm.Keeper
-	TokenFactoryKeeper   *tokenfactorykeeper.Keeper
+	AccountKeeper             *authkeeper.AccountKeeper
+	BankKeeper                *bankkeeper.BaseKeeper
+	AuthzKeeper               *authzkeeper.Keeper
+	StakingKeeper             *stakingkeeper.Keeper
+	DistrKeeper               *distrkeeper.Keeper
+	SlashingKeeper            *slashingkeeper.Keeper
+	IBCKeeper                 *ibckeeper.Keeper
+	ICAHostKeeper             *icahostkeeper.Keeper
+	TransferKeeper            *ibctransferkeeper.Keeper
+	EvidenceKeeper            *evidencekeeper.Keeper
+	GAMMKeeper                *gammkeeper.Keeper
+	TwapKeeper                *twap.Keeper
+	LockupKeeper              *lockupkeeper.Keeper
+	EpochsKeeper              *epochskeeper.Keeper
+	IncentivesKeeper          *incentiveskeeper.Keeper
+	MintKeeper                *mintkeeper.Keeper
+	PoolIncentivesKeeper      *poolincentiveskeeper.Keeper
+	TxFeesKeeper              *txfeeskeeper.Keeper
+	SuperfluidKeeper          *superfluidkeeper.Keeper
+	GovKeeper                 *govkeeper.Keeper
+	WasmKeeper                *wasm.Keeper
+	TokenFactoryKeeper        *tokenfactorykeeper.Keeper
+	ValidatorPreferenceKeeper *validatorpreferencekeeper.Keeper
 	// IBC modules
 	// transfer module
 	TransferModule transfer.AppModule

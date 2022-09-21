@@ -29,7 +29,7 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 	// check if a user already have a validator-set created
 	_, found := server.keeper.GetValidatorSetPreference(ctx, msg.Owner)
 	if found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %d already has a validator set", msg.Owner))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s already has a validator set", msg.Owner))
 	}
 
 	total_weight := sdk.NewDec(0)
@@ -47,12 +47,18 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 		return nil, fmt.Errorf("The weights allocated to the validators do not add up to 1")
 	}
 
-	server.keeper.SetValidatorSetPreferences(ctx, *msg)
-	return &types.MsgValidatorSetPreferenceResponse{}, nil
+	// server.keeper.SetValidatorSetPreferences(ctx, *msg.SetPreferences)
+	return &types.MsgCreateValidatorSetPreferenceResponse{}, nil
 }
 
 func (server msgServer) StakeToValidatorSet(goCtx context.Context, msg *types.MsgStakeToValidatorSet) (*types.MsgStakeToValidatorSetResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// get the existing validator set preference
+	existingSet, found := server.keeper.GetValidatorSetPreference(ctx, msg.Owner)
+	if !found {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s doesn't have validator set", msg.Owner))
+	}
 
 	// loop through the validatorSetPreference and delegate the proportion of the tokens based on weights
 	// user account address
@@ -63,7 +69,7 @@ func (server msgServer) StakeToValidatorSet(goCtx context.Context, msg *types.Ms
 
 	tokenAmt := sdk.NewDec(msg.Coin.Amount.Int64())
 
-	for _, val := range msg.Preferences {
+	for _, val := range existingSet.Preferences {
 		validator, err := server.keeper.ValidateValidator(ctx, val.ValOperAddress)
 		if err != nil {
 			return nil, err
@@ -90,7 +96,7 @@ func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *type
 	// get the existing validator set preference
 	existingSet, found := server.keeper.GetValidatorSetPreference(ctx, msg.Owner)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %d doesn't have validator set", msg.Owner))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s doesn't have validator set", msg.Owner))
 	}
 
 	owner, err := sdk.AccAddressFromBech32(msg.Owner)
@@ -102,7 +108,7 @@ func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *type
 	tokenAmt := sdk.NewDec(msg.Coin.Amount.Int64())
 
 	totalAmountFromWeights := sdk.NewDec(0)
-	for i, val := range existingSet.Preferences {
+	for _, val := range existingSet.Preferences {
 		// Calculate the amount to unstake based on the existing weights
 		amountToUnStake := val.Weight.Mul(tokenAmt)
 

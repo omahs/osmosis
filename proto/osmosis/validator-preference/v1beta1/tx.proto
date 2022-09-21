@@ -28,7 +28,6 @@ message MsgCreateValidatorSetPreference {
     // owner is the user who is trying to unstake.
     string owner = 1 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
 
-    // list of validator set {valAddr, weight}
     repeated ValidatorPreference preferences = 2 [
       (gogoproto.moretags) = "yaml:\"preferences\"",
       (gogoproto.nullable) = false
@@ -47,10 +46,6 @@ message MsgStakeToValidatorSet {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
 
-  // the users validator-set, [{valAddr, weight}] to stake the tokens to.
-  // a user can have multiple {valAddr, weight}.
-  // All the weights must add up to 1.
-  repeated ValidatorPreference preferences = 3 [ (gogoproto.nullable) = false ];
 }
 
 message MsgStakeToValidatorSetResponse { bool success = 1; }

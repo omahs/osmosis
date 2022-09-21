@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/gogo/protobuf/proto"
 	"github.com/osmosis-labs/osmosis/v12/osmoutils"
 	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/types"
 )
@@ -38,13 +39,21 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) SetValidatorSetPreferences(ctx sdk.Context, validators types.ValidatorSetPreferences) {
 	store := ctx.KVStore(k.storeKey)
 	osmoutils.MustSet(store, []byte(validators.Owner), &validators)
-	return nil
 }
 
-func (k Keeper) GetValidatorSetPreference(ctx sdk.Context, owner string) types.ValidatorSetPreferences {
+func (k Keeper) GetValidatorSetPreference(ctx sdk.Context, owner string) (types.ValidatorSetPreferences, bool) {
 	validatorSet := types.ValidatorSetPreferences{}
 
 	store := ctx.KVStore(k.storeKey)
-	osmoutils.MustGet(store, []byte(owner), &validatorSet)
-	return validatorSet
+	b := store.Get([]byte(owner))
+	if b == nil {
+		return types.ValidatorSetPreferences{}, false
+	}
+
+	err := proto.Unmarshal(b, &validatorSet)
+	if err != nil {
+		return types.ValidatorSetPreferences{}, false
+	}
+
+	return validatorSet, true
 }
