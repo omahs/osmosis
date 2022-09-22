@@ -15,7 +15,7 @@ func (k Keeper) ValidateValidator(ctx sdk.Context, valOperAddress string) (staki
 
 	validator, found := k.stakingKeeper.GetValidator(ctx, vals)
 	if !found {
-		return stakingtypes.Validator{}, fmt.Errorf("validator address doesnot exist")
+		return stakingtypes.Validator{}, fmt.Errorf("validator doesnot exist %s", validator)
 	}
 
 	return validator, nil

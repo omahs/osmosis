@@ -1,20 +1,22 @@
 package keeper_test
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/keeper"
 	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/types"
 )
 
 func (suite *KeeperTestSuite) TestCreateValidatorSetPreference() {
-
 	// setup 3 validators
 	valAddrs := []string{}
 	for i := 0; i < 3; i++ {
 		valAddr := suite.SetupValidators([]stakingtypes.BondStatus{stakingtypes.Bonded})
 		valAddrs = append(valAddrs, valAddr[0].String())
 	}
+
+	fmt.Println("VALIDATORS: ", valAddrs)
 
 	type param struct {
 		owner       sdk.AccAddress
@@ -51,17 +53,21 @@ func (suite *KeeperTestSuite) TestCreateValidatorSetPreference() {
 
 	for _, test := range tests {
 		suite.Run(test.name, func() {
-			suite.SetupTest()
-			msgServer := keeper.NewMsgServerImpl(suite.App.ValidatorPreferenceKeeper)
-			c := sdk.WrapSDKContext(suite.Ctx)
 
-			_, err := msgServer.CreateValidatorSetPreference(c, types.NewMsgCreateValidatorSetPreference(test.param.owner, test.param.preferences))
+			validators := suite.App.StakingKeeper.GetAllValidators(suite.Ctx)
+			fmt.Println(validators)
 
-			if test.expectPass {
-				suite.Require().NoError(err)
-			} else {
-				suite.Require().Error(err)
-			}
+			// suite.SetupTest()
+			// msgServer := keeper.NewMsgServerImpl(suite.App.ValidatorPreferenceKeeper)
+			// c := sdk.WrapSDKContext(suite.Ctx)
+
+			// _, err := msgServer.CreateValidatorSetPreference(c, types.NewMsgCreateValidatorSetPreference(test.param.owner, test.param.preferences))
+
+			// if test.expectPass {
+			// 	suite.Require().NoError(err)
+			// } else {
+			// 	suite.Require().Error(err)
+			// }
 
 		})
 	}
