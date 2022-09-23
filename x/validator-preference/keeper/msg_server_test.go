@@ -130,6 +130,36 @@ func (suite *KeeperTestSuite) TestCreateValidatorSetPreference() {
 
 func (suite *KeeperTestSuite) TestStakeToValidatorSet() {
 
+	suite.SetupTest()
+	// setup a validator set
+
+	type param struct {
+		name  string
+		coins sdk.Coin
+	}
+
+	tests := []struct {
+		name       string
+		param      param
+		expectPass bool
+	}{
+		{
+			name:       "Check the validator set exists",
+			param:      param{},
+			expectPass: true,
+		},
+		{
+			name:       "",
+			param:      param{},
+			expectPass: true,
+		},
+	}
+
+	for _, test := range tests {
+		suite.Run(test.name, func() {
+
+		})
+	}
 }
 
 func (suite *KeeperTestSuite) TestUnStakeFromValidatorSet() {
