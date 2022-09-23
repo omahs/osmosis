@@ -49,6 +49,27 @@ func (suite *KeeperTestSuite) TestCreateValidatorSetPreference() {
 			expectPass: true,
 		},
 		{
+			name: "create another validator set by the same user",
+			param: param{
+				owner: sdk.AccAddress([]byte("addr1---------------")),
+				preferences: []types.ValidatorPreference{
+					{
+						ValOperAddress: valAddrs[0],
+						Weight:         sdk.NewDecWithPrec(5, 1),
+					},
+					{
+						ValOperAddress: valAddrs[1],
+						Weight:         sdk.NewDecWithPrec(3, 1),
+					},
+					{
+						ValOperAddress: valAddrs[2],
+						Weight:         sdk.NewDecWithPrec(2, 1),
+					},
+				},
+			},
+			expectPass: false,
+		},
+		{
 			name: "create validator set with unknown validator address",
 			param: param{
 				owner: sdk.AccAddress([]byte("addr1---------------")),
