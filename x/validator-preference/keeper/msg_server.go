@@ -43,8 +43,8 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 		total_weight = total_weight.Add(val.Weight)
 	}
 
-	if total_weight != sdk.NewDec(1) {
-		return nil, fmt.Errorf("The weights allocated to the validators do not add up to 1")
+	if !total_weight.Equal(sdk.NewDec(1)) {
+		return nil, fmt.Errorf("The weights allocated to the validators do not add up to 1, %d", total_weight)
 	}
 
 	setMsg := types.ValidatorSetPreferences{
