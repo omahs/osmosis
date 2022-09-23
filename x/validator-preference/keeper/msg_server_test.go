@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/keeper"
 	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/types"
 )
@@ -11,11 +10,7 @@ func (suite *KeeperTestSuite) TestCreateValidatorSetPreference() {
 	suite.SetupTest()
 
 	// setup 3 validators
-	valAddrs := []string{}
-	for i := 0; i < 3; i++ {
-		valAddr := suite.SetupValidators([]stakingtypes.BondStatus{stakingtypes.Bonded})
-		valAddrs = append(valAddrs, valAddr[0].String())
-	}
+	valAddrs := suite.SetupMultipleValidators(3)
 
 	type param struct {
 		owner       sdk.AccAddress
@@ -129,13 +124,12 @@ func (suite *KeeperTestSuite) TestCreateValidatorSetPreference() {
 }
 
 func (suite *KeeperTestSuite) TestStakeToValidatorSet() {
-
 	suite.SetupTest()
-	// setup a validator set
 
 	type param struct {
-		name  string
-		coins sdk.Coin
+		delegator   sdk.AccAddress
+		coin        sdk.Coin
+		preferences []types.ValidatorPreference
 	}
 
 	tests := []struct {
@@ -144,20 +138,46 @@ func (suite *KeeperTestSuite) TestStakeToValidatorSet() {
 		expectPass bool
 	}{
 		{
-			name:       "Check the validator set exists",
-			param:      param{},
+			name: "Stake to a valid validator!",
+			param: param{
+				delegator: sdk.AccAddress([]byte("addr1---------------")),
+				coin:      sdk.NewCoin("stake", sdk.NewInt(10)),
+			},
 			expectPass: true,
 		},
 		{
-			name:       "",
-			param:      param{},
-			expectPass: true,
+			name: "User doesnot have enough tokens to stake",
+			param: param{
+				delegator: sdk.AccAddress([]byte("addr2---------------")),
+				coin:      sdk.NewCoin("stake", sdk.NewInt(25)),
+			},
+			expectPass: false,
 		},
 	}
 
 	for _, test := range tests {
 		suite.Run(test.name, func() {
 
+			// setup message server
+			msgServer := keeper.NewMsgServerImpl(suite.App.ValidatorPreferenceKeeper)
+			c := sdk.WrapSDKContext(suite.Ctx)
+
+			// call the create validator set preference
+			preferences := suite.PrepareStakeToValidatorSet()
+
+			_, err := msgServer.CreateValidatorSetPreference(c, types.NewMsgCreateValidatorSetPreference(test.param.delegator, preferences))
+			suite.Require().NoError(err)
+
+			// Fund the delegator address account
+			suite.FundAcc(test.param.delegator, sdk.Coins{sdk.NewCoin("stake", sdk.NewInt(20))})
+
+			// call the create validator set preference
+			_, err = msgServer.StakeToValidatorSet(c, types.NewMsgMsgStakeToValidatorSet(test.param.delegator, test.param.coin))
+			if test.expectPass {
+				suite.Require().NoError(err)
+			} else {
+				suite.Require().Error(err)
+			}
 		})
 	}
 }

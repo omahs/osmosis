@@ -30,7 +30,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Request type for UserValidatorPreferences
+// Request type for UserValidatorPreferences.
 type QueryUserValidatorPreferences struct {
 	// user account address
 	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`

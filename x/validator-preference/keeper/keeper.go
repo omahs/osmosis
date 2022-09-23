@@ -38,14 +38,14 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) SetValidatorSetPreferences(ctx sdk.Context, validators types.ValidatorSetPreferences) {
 	store := ctx.KVStore(k.storeKey)
-	osmoutils.MustSet(store, []byte(validators.Owner), &validators)
+	osmoutils.MustSet(store, []byte(validators.Delegator), &validators)
 }
 
-func (k Keeper) GetValidatorSetPreference(ctx sdk.Context, owner string) (types.ValidatorSetPreferences, bool) {
+func (k Keeper) GetValidatorSetPreference(ctx sdk.Context, delegator string) (types.ValidatorSetPreferences, bool) {
 	validatorSet := types.ValidatorSetPreferences{}
 
 	store := ctx.KVStore(k.storeKey)
-	b := store.Get([]byte(owner))
+	b := store.Get([]byte(delegator))
 	if b == nil {
 		return types.ValidatorSetPreferences{}, false
 	}

@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/types"
 )
 
@@ -27,14 +28,14 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// check if a user already have a validator-set created
-	_, found := server.keeper.GetValidatorSetPreference(ctx, msg.Owner)
+	_, found := server.keeper.GetValidatorSetPreference(ctx, msg.Delegator)
 	if found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s already has a validator set", msg.Owner))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s already has a validator set", msg.Delegator))
 	}
 
 	total_weight := sdk.NewDec(0)
 	for _, val := range msg.Preferences {
-		// validation checks making sure the weights add up to 1 and also the validator given is correct
+		// validation to check that the validator given is valid
 		_, err := server.keeper.ValidateValidator(ctx, val.ValOperAddress)
 		if err != nil {
 			return nil, err
@@ -43,12 +44,13 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 		total_weight = total_weight.Add(val.Weight)
 	}
 
+	// check if the total validator distribution weights equal 1
 	if !total_weight.Equal(sdk.NewDec(1)) {
 		return nil, fmt.Errorf("The weights allocated to the validators do not add up to 1, %d", total_weight)
 	}
 
 	setMsg := types.ValidatorSetPreferences{
-		Owner:       msg.Owner,
+		Delegator:   msg.Delegator,
 		Preferences: msg.Preferences,
 	}
 
@@ -56,18 +58,22 @@ func (server msgServer) CreateValidatorSetPreference(goCtx context.Context, msg 
 	return &types.MsgCreateValidatorSetPreferenceResponse{}, nil
 }
 
+func (server msgServer) UpdateValidatorSetPreference(goCtx context.Context, msg *types.MsgUpdateValidatorSetPreference) (*types.MsgUpdateValidatorSetPreferenceResponse, error) {
+	return nil, nil
+}
+
 func (server msgServer) StakeToValidatorSet(goCtx context.Context, msg *types.MsgStakeToValidatorSet) (*types.MsgStakeToValidatorSetResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// get the existing validator set preference
-	existingSet, found := server.keeper.GetValidatorSetPreference(ctx, msg.Owner)
+	existingSet, found := server.keeper.GetValidatorSetPreference(ctx, msg.Delegator)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s doesn't have validator set", msg.Owner))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s doesn't have validator set", msg.Delegator))
 	}
 
 	// loop through the validatorSetPreference and delegate the proportion of the tokens based on weights
 	// user account address
-	owner, err := sdk.AccAddressFromBech32(msg.Owner)
+	delegator, err := sdk.AccAddressFromBech32(msg.Delegator)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +89,7 @@ func (server msgServer) StakeToValidatorSet(goCtx context.Context, msg *types.Ms
 		// NOTE: it'd be nice if this value was decimal
 		amountToStake := val.Weight.Mul(tokenAmt).RoundInt()
 
-		_, err = server.keeper.stakingKeeper.Delegate(ctx, owner, amountToStake, validator.Status, validator, true)
+		_, err = server.keeper.stakingKeeper.Delegate(ctx, delegator, amountToStake, stakingtypes.Unbonded, validator, true)
 		if err != nil {
 			return nil, err
 		}
@@ -99,12 +105,12 @@ func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *type
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// get the existing validator set preference
-	existingSet, found := server.keeper.GetValidatorSetPreference(ctx, msg.Owner)
+	existingSet, found := server.keeper.GetValidatorSetPreference(ctx, msg.Delegator)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s doesn't have validator set", msg.Owner))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("user %s doesn't have validator set", msg.Delegator))
 	}
 
-	owner, err := sdk.AccAddressFromBech32(msg.Owner)
+	delegator, err := sdk.AccAddressFromBech32(msg.Delegator)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +129,7 @@ func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *type
 			return nil, err
 		}
 
-		_, err = server.keeper.stakingKeeper.Undelegate(ctx, owner, valAddr, amountToUnStake)
+		_, err = server.keeper.stakingKeeper.Undelegate(ctx, delegator, valAddr, amountToUnStake)
 		if err != nil {
 			return nil, err
 		}
@@ -136,4 +142,8 @@ func (server msgServer) UnStakeFromValidatorSet(goCtx context.Context, msg *type
 	}
 
 	return &types.MsgUnStakeFromValidatorSetResponse{}, nil
+}
+
+func (server msgServer) WithdrawDelegationRewards(goCtx context.Context, msg *types.MsgWithdrawDelegationRewards) (*types.MsgWithdrawDelegationRewardsResponse, error) {
+	return nil, nil
 }

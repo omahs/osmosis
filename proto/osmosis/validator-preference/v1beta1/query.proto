@@ -18,7 +18,7 @@ service Query {
   }
 }
 
-// Request type for UserValidatorPreferences
+// Request type for UserValidatorPreferences.
 message QueryUserValidatorPreferences {
   // user account address
   string user = 1;
